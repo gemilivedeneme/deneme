@@ -59,11 +59,12 @@ button.grn{background:#2a9d4a}
 #tumKullanicilar>.sec-head h3{margin:0}
 .pen-bas>h3{margin-right:auto;cursor:pointer;user-select:none}
 #tumKullanicilar.pen.kapali>.sec-head{margin-bottom:0}
-#tumKullanicilar .kisi-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+#tumKullanicilar .kisi-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
 #tumKullanicilar .kisi{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);min-width:0}
 #tumKullanicilar .kisi .kisi-ad{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 #tumKullanicilar .kisi .kisi-alt{font-size:12px;color:var(--mut);margin-top:2px}
-#tumKullanicilar .kisi .durum{font-size:11px;font-weight:700;border-radius:999px;padding:3px 8px;white-space:nowrap}
+#tumKullanicilar .kisi .kisi-bilgi{flex:1 1 auto;min-width:0}
+#tumKullanicilar .kisi .durum{flex:none;margin-left:auto;font-size:11px;font-weight:700;border-radius:999px;padding:3px 8px;white-space:nowrap}
 #tumKullanicilar .kisi .durum.on{background:#2ecc4020;color:#23943a}
 #tumKullanicilar .kisi .durum.off{background:#e5484d18;color:#d33}
 .vcard{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
@@ -291,7 +292,7 @@ button.alt.sel{background:var(--blue);color:#fff;border-color:var(--blue)}
 #gList input{width:18px;height:18px;flex:none}
 
 /* Haftalık ortalama grafiği */
-#haftaPanel .ucard,#ayPanel .ucard{padding:12px 14px}
+#haftaPanel .ucard,#ayPanel .ucard,#yilPanel .ucard{padding:12px 14px}
 #hGrafik svg{width:100%;height:auto;display:block}
 .hc-t{fill:var(--mut);font-size:12px}
 .hc-v{fill:var(--fg);font-size:12px;font-weight:700}
@@ -584,6 +585,10 @@ table.sp td.why{min-width:220px}
     <button id="kayitAcKapat" type="button" class="alt">Kayıt ayarını yükle</button>
   </div>
   <hr>
+  <strong>Eski kayıtları düzelt</strong>
+  <p class="mut">Mevcut kullanıcıların yalnızca soyadlarının son kelimesini büyük harfe çevirir. Kullanıcı hesapları ve diğer bilgiler silinmez.</p>
+  <div class="row"><button id="eskiSoyadlariBuyut" type="button" class="alt">Eski kayıtların soyadlarını büyüt</button></div>
+  <hr>
   <strong>Yeni kullanıcı ekle</strong>
   <div class="row">
     <input id="aAd" placeholder="Ad Soyad">
@@ -659,7 +664,7 @@ table.sp td.why{min-width:220px}
 </section>
 
 <section class="panel" id="ortPanel">
-  <div class="sec-head"><h2>Ortalama</h2><div class="bar" id="ortSekme"><button id="ortH" type="button" class="alt sm sel">Haftalık</button><button id="ortA" type="button" class="alt sm">Aylık</button></div></div>
+  <div class="sec-head"><h2>Ortalama</h2><div class="bar" id="ortSekme"><button id="ortH" type="button" class="alt sm sel">Haftalık</button><button id="ortA" type="button" class="alt sm">Aylık</button><button id="ortY" type="button" class="alt sm">Yıllık</button></div></div>
 
   <div id="haftaPanel">
     <div class="sec-head"><div class="bar"><button id="hOnce" type="button" class="alt sm">◀ Önceki hafta</button><button id="hBu" type="button" class="alt sm">Bu hafta</button><button id="hSonra" type="button" class="alt sm">Sonraki hafta ▶</button></div></div>
@@ -673,6 +678,13 @@ table.sp td.why{min-width:220px}
     <p id="aEtiket" class="mut"></p>
     <div id="aStat" class="stats"></div>
     <div class="ucard"><div id="aTablo" class="scroll"></div></div>
+  </div>
+
+  <div id="yilPanel" class="ort-gizli">
+    <div class="sec-head"><div class="bar"><button id="yOnce" type="button" class="alt sm">◀ Önceki yıl</button><button id="yBu" type="button" class="alt sm">Bu yıl</button><button id="ySonra" type="button" class="alt sm">Sonraki yıl ▶</button></div></div>
+    <p id="yEtiket" class="mut"></p>
+    <div id="yStat" class="stats"></div>
+    <div class="ucard"><div id="yGrafik"></div></div>
   </div>
 </section>
 
@@ -699,8 +711,8 @@ table.sp td.why{min-width:220px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL = "https://pgaqufqkxptoxrgtlrxv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_hxb7BDh7sjAwoBDt4UjG1w_Tu6oAwO2";
+const SUPABASE_URL = "https://vlvlmglhknxtpdbvfwhk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_H9FYK_shLQVUerAp8AIAHA_z-63tYNA";
 
 const N0 = 1, NMAX = 60, COLS = ["n1","n2","n3","n4","n5","n6"];
 const $ = id => document.getElementById(id);
@@ -832,7 +844,7 @@ $("kayit").onclick = async () => {
   const kayitAcik = await kayitDurumuYukle();
   if (!kayitAcik) { msg("Yeni kullanıcı kaydı şu anda kapalı. Yönetici ile iletişime geçin."); authMod(false); return; }
   const s = sicilAl(); if (!s) return;
-  const ad = $("ad").value.trim();
+  const ad = soyadiBuyut($("ad").value);
   if (!ad) { msg("Kayıt için adınızı yazın."); return; }
   const vk = $("vardiyaKayit").value;
   if (!vk) { msg("Kayıt için vardiyanızı seçin (A, B, C veya D)."); return; }
@@ -883,8 +895,25 @@ $("profilBtn").onclick = () => {
 };
 $("profilKapat").onclick = () => $("profil").classList.add("hide");
 $("adminKapat").onclick = () => $("admin").classList.add("hide");
+// Ad Soyad alanında yalnızca son kelimeyi (soyadı) Türkçe kurallarına göre büyüt.
+function soyadiBuyut(metin) {
+  const parcalar = String(metin || "").trim().split(/\s+/).filter(Boolean);
+  if (parcalar.length < 2) return parcalar.join(" ");
+  parcalar[parcalar.length - 1] = parcalar[parcalar.length - 1].toLocaleUpperCase("tr-TR");
+  return parcalar.join(" ");
+}
+// Eski kayıtlar dahil görünen adı düzeltir: "Ali Yılmaz (1234)" -> "Ali YILMAZ (1234)"
+function adBuyut(metin) {
+  const m = String(metin == null ? "" : metin).match(/^(.*?)(\s*[\(\[].*)?$/);
+  return m ? soyadiBuyut(m[1]) + (m[2] || "") : String(metin || "");
+}
+["ad", "pAd", "aAd"].forEach(id => {
+  const alan = $(id);
+  if (alan) alan.addEventListener("blur", () => { alan.value = soyadiBuyut(alan.value); });
+});
+
 $("pKaydet").onclick = async () => {
-  const ad = $("pAd").value.trim();
+  const ad = soyadiBuyut($("pAd").value);
   if (!ad) { msg("Ad Soyad boş olamaz."); return; }
   msg("Profil kaydediliyor…");
   const { data, error } = await sb.auth.updateUser({ data: { ...(me.user_metadata || {}), ad, sicil_gizle: $("pGizle").checked } });
@@ -1099,7 +1128,7 @@ function renderShared() {
   rows.forEach(r => {
     // Vardiya RPC'sinde görünmeyen hesaplar (gizli yönetici dahil) ortak tablolarda da gösterilmez.
     if (gorunenKullanicilar && !gorunenKullanicilar.has(r.user_id)) return;
-    if (!byUser.has(r.user_id)) byUser.set(r.user_id, { ad: r.kullanici || "?", list: [] });
+    if (!byUser.has(r.user_id)) byUser.set(r.user_id, { ad: adBuyut(r.kullanici) || "?", list: [] });
     byUser.get(r.user_id).list.push(r);
   });
   const users = [...byUser.entries()].sort((a, b) =>
@@ -1347,6 +1376,19 @@ $("adminBtn").onclick = () => {
   if (acik) { adminYukle(); a.scrollIntoView({ behavior: "smooth", block: "start" }); }
 };
 $("aYenile").onclick = () => adminYukle();
+
+$("eskiSoyadlariBuyut").onclick = async () => {
+  if (!isAdmin()) { msg("Bu işlem için yönetici olmalısınız."); return; }
+  if (!confirm("Tüm kayıtlı kullanıcıların soyadlarının son kelimesi büyük harfe çevrilsin mi? Bu işlem kullanıcı hesaplarını veya diğer bilgileri silmez.")) return;
+  msg("Eski kullanıcı adları güncelleniyor…");
+  const { data, error } = await sb.rpc("admin_soyadlari_buyut");
+  if (error) {
+    msg("Toplu güncelleme yapılamadı: " + error.message + " — Önce eklenen admin-soyad-buyut.sql kodunu Supabase SQL Editor'de çalıştırın.");
+    return;
+  }
+  msg((Number(data) || 0) + " kullanıcının soyadı güncellendi.");
+  await adminYukle();
+};
 $("aAra").oninput = () => adminCiz();
 
 // ---- Vardiya sistemi (A, B, C, D) ----
@@ -1360,7 +1402,7 @@ async function vardiyaYukle() {
   if (!sb) { box.classList.add("hide"); return; }
   const { data, error } = await sb.rpc("vardiya_listesi", { gun: secili });   // gizli yönetici kayıtları sunucuda filtrelenir
   if (error) { vardiyaList = []; vardiyaListeHazir = true; box.classList.add("hide"); renderShared(); return; }
-  vardiyaList = data || [];
+  vardiyaList = (data || []).map(u => ({ ...u, ad: adBuyut(u.ad) }));
   vardiyaListeHazir = true;
   try { const g = await sb.rpc("giris_sayisi", { gun: secili }); girisSayi = g.error ? null : g.data; } catch (e) { girisSayi = null; }
   try { const z = await sb.rpc("ziyaret_sayisi", { gun: secili }); ziyaretSayi = z.error ? null : z.data; } catch (e) { ziyaretSayi = null; }
@@ -1443,14 +1485,15 @@ function vardiyaCiz() {
     const tum = sirala(vardiyaList);
     $("kullaniciSayisi").textContent = "(" + tum.length + ")";
     tum.forEach(u => {
-      const item = el("div", "kisi"), info = el("div", "", ""), aktifMi = !!u.aktif;
+      const item = el("div", "kisi"), info = el("div", "kisi-bilgi", ""), aktifMi = !!u.aktif;
       const adMetni = ad(u);
       info.append(el("div", "kisi-ad", adMetni));
       const alt = (u.vardiya ? u.vardiya + " vardiyası" : "Vardiya seçilmedi");
       const son = u.son_giris || u.last_sign_in_at || u.son_gorulme || u.last_seen_at || u.son_aktiflik || null;
       let sonMetin = "";
       if (son) { const dt = new Date(son); if (!isNaN(dt.getTime())) sonMetin = " · Son giriş: " + dt.toLocaleString("tr-TR"); }
-      info.append(el("div", "kisi-alt", alt + sonMetin));
+      info.append(el("div", "kisi-alt", alt));
+      if (sonMetin) info.append(el("div", "kisi-alt", sonMetin.replace(" · ", "")));
       item.append(el("span", "dot" + (aktifMi ? " on" : "")));
       item.append(info);
       item.append(el("span", "durum " + (aktifMi ? "on" : "off"), aktifMi ? "Çevrimiçi" : "Çevrimdışı"));
@@ -1504,10 +1547,21 @@ async function adminYukle() {
   await kayitDurumuYukle();
   const { data, error } = await sb.rpc("admin_kullanicilar");
   if (error) { msg("Kullanıcı listesi alınamadı: " + error.message); return; }
-  adminList = data || []; adminCiz();
+  adminList = (data || []).map(u => ({ ...u, ad: soyadiBuyut(u.ad) })); adminCiz();
 }
 
+// Yönetici listesinde ad eksik gelirse (yalnızca ilk ad) diğer kaynaklardaki tam adı kullan
+function adTamla(u) {
+  const say = t => String(t || "").trim().split(/\s+/).filter(Boolean).length;
+  const adaylar = [u.ad];
+  const v = (vardiyaList || []).find(x => x.id === u.id); if (v) adaylar.push(v.ad);
+  (typeof rows !== "undefined" && rows ? rows : []).forEach(r => { if (r.user_id === u.id && r.kullanici) adaylar.push(String(r.kullanici).replace(/\s*[\(\[].*$/, "")); });
+  let en = adBuyut(u.ad || "");
+  adaylar.forEach(a => { const x = adBuyut(String(a || "").replace(/\s*[\(\[].*$/, "")); if (say(x) > say(en)) en = x; });
+  return en;
+}
 function adminCiz() {
+  adminList.forEach(u => { u.ad = adTamla(u); });
   const box = $("aListe"); box.textContent = "";
   const q = $("aAra").value.trim().toLocaleLowerCase("tr");
   const list = adminList.filter(u => !q || ((u.sicil || "") + " " + (u.ad || "")).toLocaleLowerCase("tr").includes(q));
@@ -1531,7 +1585,11 @@ function adminCiz() {
     const tdA = el("td", "act");
     const b0 = el("button", "sm alt", "Sicil değiştir");
     b0.onclick = () => adminSicil(u);
-    tdA.append(b0);
+    const bAd = el("button", "sm alt", "Ad Soyad değiştir");
+    bAd.onclick = () => adminAd(u);
+    const bSf = el("button", "sm alt", "Şifre değiştir");
+    bSf.onclick = () => adminSifre(u);
+    tdA.append(bAd, b0, bSf);
     if (!self) {
       const b1 = el("button", "sm " + (u.banli ? "grn" : "red"), u.banli ? "Banı kaldır" : "Banla");
       b1.onclick = () => adminBan(u);
@@ -1570,6 +1628,31 @@ async function adminSicil(u) {
     await hazirla();
   }
 }
+async function adminAd(u) {
+  const eski = (u.ad || "") + " (" + u.sicil + ")", self = u.id === myId();
+  const yeni = prompt(eski + " için yeni Ad Soyad yazın (soyadı otomatik büyük harf olur):", u.ad || "");
+  if (yeni === null) return;
+  const ad = soyadiBuyut(yeni);
+  if (!ad) { msg("Ad Soyad boş olamaz."); return; }
+  if (ad === u.ad) { msg("Yeni ad mevcut adla aynı."); return; }
+  if (!confirm(eski + " adı \"" + (u.ad || "") + "\" yerine \"" + ad + "\" olarak değiştirilsin mi?")) return;
+  const ok = await adminIslem("admin_ad_degistir", { hedef: u.id, yeni_ad: ad }, "Ad Soyad değiştirildi: " + ad + ".");
+  if (ok && self) {
+    const r = await sb.auth.refreshSession();
+    if (r.data && r.data.session) me = r.data.session.user;
+    await hazirla();
+  }
+}
+async function adminSifre(u) {
+  const ad = (u.ad || "") + " (" + u.sicil + ")", self = u.id === myId();
+  const yeni = prompt(ad + " için yeni şifreyi yazın:");
+  if (yeni === null) return;
+  if (!yeni.trim()) { msg("Şifre boş olamaz."); return; }
+  if (!confirm(ad + " şifresi değiştirilsin mi?" + (self ? "" : "\nKullanıcının açık oturumu kapanır, yeni şifreyle giriş yapması gerekir."))) return;
+  const ok = await adminIslem("admin_sifre_degistir", { hedef: u.id, yeni_sifre: sifreHazirla(yeni) },
+    "Şifre değiştirildi: " + ad + (self ? "." : ". Yeni şifreyi kullanıcıya iletin."));
+  if (ok && self) { msg("Şifreniz değişti, yeniden giriş yapın."); try { await sb.auth.signOut(); } catch (e) {} location.reload(); }
+}
 async function adminBan(u) {
   const ad = (u.ad || "") + " (" + u.sicil + ")";
   if (u.banli) {
@@ -1593,7 +1676,7 @@ async function adminSil(u) {
 }
 
 $("aEkle").onclick = async () => {
-  const ad = $("aAd").value.trim(), s = $("aSicil").value.trim().toLowerCase(), sifre = $("aSifre").value, rol = $("aRol").value;
+  const ad = soyadiBuyut($("aAd").value), s = $("aSicil").value.trim().toLowerCase(), sifre = $("aSifre").value, rol = $("aRol").value;
   if (!ad) { msg("Yeni kullanıcı için ad soyad yazın."); return; }
   if (!/^[a-z0-9]{1,30}$/.test(s)) { msg("Sicil numarası yalnızca harf ve rakamdan oluşmalı."); return; }
   if (!sifre) { msg("Bir şifre yazın."); return; }
@@ -1623,7 +1706,7 @@ const GOR = [
   ["tablolar", "Kullanıcıların tabloları", ["users"]],
   ["ozetyan", "Tabloların yanındaki giriş özeti (ilk/son giriş, ortalama, hedefler)", []],
   ["hafta", "Haftalık ortalama", ["haftaPanel"]],
-  ["ay", "Aylık ortalama", ["ayPanel"]],
+  ["ay", "Aylık ve yıllık ortalama", ["ayPanel"]],
   ["log", "Giriş kayıtları ve süre farkı", ["logBox"]]
 ];
 // misafir: giriş yapmadan (kayıt yoksa gizli) · uye: giriş yapınca (kayıt yoksa görünür)
@@ -1842,16 +1925,16 @@ function toplamHarita() {
 const makineYaz = l => l.sutun === "makine" ? (l.eski || "(adsız)") + " → " + (l.yeni || "(adsız)") + " (ad değişti)" : (l.makine || "(adsız)");
 // Herkes kimin girdiğini görür; sicil yalnızca yöneticiye ek olarak gösterilir (kullanıcı listesinden)
 const sicilHarita = () => new Map(adminList.map(u => [u.id, u.sicil]));
-const logAd = (l, sm) => (l.kullanici || "?") + (isAdmin() && sm.get(l.user_id) ? " [" + sm.get(l.user_id) + "]" : "");
+const logAd = (l, sm) => (adBuyut(l.kullanici) || "?") + (isAdmin() && sm.get(l.user_id) ? " [" + sm.get(l.user_id) + "]" : "");
 
 async function logYukle() {
   if (!sb) { logs = []; logCiz(); return; }
   const { data, error } = await sb.from("sayi_log").select("*").eq("tarih", secili).order("zaman", { ascending: false }).limit(2000);
   if (error) { logOk = false; logCiz(); return; }   // tablo kurulmamışsa bölüm gizli kalır
-  logOk = true; logs = data || [];
+  logOk = true; logs = (data || []).filter(l => l.sutun !== "makine");   // makine adı değişiklikleri kayıtta gösterilmez; makine adı sayı girişiyle birlikte görünür
   if (isAdmin() && !adminList.length) {
     const r = await sb.rpc("admin_kullanicilar");
-    if (!r.error) adminList = r.data || [];
+    if (!r.error) adminList = (r.data || []).map(u => ({ ...u, ad: soyadiBuyut(u.ad) }));
   }
   logCiz();
 }
@@ -1985,7 +2068,7 @@ function logCizAsil() {
     if (!ad && tekrar.has(l.id)) tdS.append(el("div", "lg-ayni", "↺ Aynı makineye daha önce girdin"));   // SÜRE sütununda: aynı kullanıcı bu makineye daha önce girmiş, arada başka makineye geçip geri dönmüş
     if (gn !== "—" && gn !== mk) tdS.append(el("div", "lg-alt", "genel: " + gn));
     tr.append(el("td", "lg-t", saatOf(l.zaman)),
-      el("td", "", (l.kullanici || "?") + (isAdmin() && sm.get(l.user_id) ? " [" + sm.get(l.user_id) + "]" : "") + (l.user_id === myId() ? " (siz)" : "")),
+      el("td", "", (adBuyut(l.kullanici) || "?") + (isAdmin() && sm.get(l.user_id) ? " [" + sm.get(l.user_id) + "]" : "") + (l.user_id === myId() ? " (siz)" : "")),
       tdMk, tdE, el("td", "lg-tp", toplamOkYaz(l, hs)), tdS);
     if (isAdmin()) {
       const td = el("td", "act"), b = el("button", "sm red", "Sil");
@@ -2092,7 +2175,7 @@ function logCsv() {
   const baslik = ["Tarih", "Saat", "Kullanıcı"].concat(isAdmin() ? ["Sicil"] : [], ["Makine", "İşlem", "Eklenen", "Önceki toplam", "Sonraki toplam", "Makinede önceki girişten (sn)", "Genel önceki girişten (sn)"]);
   const satirlar = [baslik.map(q).join(";")];
   const dv = v => v == null ? "" : toplamYaz(v), th = toplamHarita();
-  list.slice().reverse().forEach(l => satirlar.push([secili, saatOf(l.zaman), l.kullanici].concat(isAdmin() ? [sm.get(l.user_id) || ""] : [],
+  list.slice().reverse().forEach(l => satirlar.push([secili, saatOf(l.zaman), adBuyut(l.kullanici)].concat(isAdmin() ? [sm.get(l.user_id) || ""] : [],
     [makineYaz(l), l.islem, eklenenYaz(l), dv(l.toplam_once ?? (th.get(l.id) || [])[0]), dv(l.toplam_sonra ?? (th.get(l.id) || [])[1]), l.fark_makine_sn, l.fark_genel_sn]).map(q).join(";")));
   const blob = new Blob(["\ufeff" + satirlar.join("\r\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "giris-kayitlari-" + secili + ".csv";
@@ -2145,7 +2228,7 @@ const haftaPzt = str => { const d = new Date(str + "T12:00:00"); d.setDate(d.get
 const yuv = x => Math.round(x * 100) / 100;
 let haftaTimer = null, haftaSeq = 0, haftaGunler = [], haftaGiris = null;
 
-let aySonAy = ""; function haftaPlanla() { clearTimeout(haftaTimer); haftaTimer = setTimeout(() => { haftaYukle(); if (aySonAy !== secili.slice(0, 7)) { aySonAy = secili.slice(0, 7); ayBas = null; } ayYukle(); }, 800); }
+let aySonAy = ""; function haftaPlanla() { clearTimeout(haftaTimer); haftaTimer = setTimeout(() => { haftaYukle(); if (aySonAy !== secili.slice(0, 7)) { aySonAy = secili.slice(0, 7); ayBas = null; } ayYukle(); if (ortSekme === "yil") yilYukle(); }, 800); }
 
 async function haftaYukle() {
   if (!sb) return;
@@ -2162,8 +2245,8 @@ async function haftaYukle() {
     data.forEach(r => {
       if (!COLS.some(k => r[k] != null && r[k] !== "")) return;   // sayı girilmemiş satırlar sayılmaz
       let u = kisi.get(r.user_id);
-      if (!u) { u = { ad: r.kullanici || "?", g: {} }; kisi.set(r.user_id, u); }
-      if (r.kullanici) u.ad = r.kullanici;
+      if (!u) { u = { ad: adBuyut(r.kullanici) || "?", g: {} }; kisi.set(r.user_id, u); }
+      if (adBuyut(r.kullanici)) u.ad = adBuyut(r.kullanici);
       u.g[r.tarih] = (u.g[r.tarih] || 0) + rsum(r);
     });
     if (data.length < 1000) break;
@@ -2193,8 +2276,8 @@ async function oncekiHaftaYukle(gunler) {
         if (!COLS.some(k => r[k] != null && r[k] !== "")) return;
         const t = rsum(r);
         sonuc.g[r.tarih] = (sonuc.g[r.tarih] || 0) + t;
-        let u = sonuc.k.get(r.user_id); if (!u) { u = { ad: r.kullanici || "?", g: {} }; sonuc.k.set(r.user_id, u); }
-        if (r.kullanici) u.ad = r.kullanici;
+        let u = sonuc.k.get(r.user_id); if (!u) { u = { ad: adBuyut(r.kullanici) || "?", g: {} }; sonuc.k.set(r.user_id, u); }
+        if (adBuyut(r.kullanici)) u.ad = adBuyut(r.kullanici);
         u.g[r.tarih] = (u.g[r.tarih] || 0) + t;
       });
       if (data.length < 1000) break;
@@ -2361,8 +2444,8 @@ async function ayYukle() {
     if (error) { $("aEtiket").textContent = "Aylık veriler yüklenemedi: " + error.message; return; }
     data.forEach(r => {
       if (!COLS.some(k => r[k] != null && r[k] !== "")) return;
-      let u = kisi.get(r.user_id); if (!u) { u = { ad: r.kullanici || "?", g: {} }; kisi.set(r.user_id, u); }
-      if (r.kullanici) u.ad = r.kullanici;
+      let u = kisi.get(r.user_id); if (!u) { u = { ad: adBuyut(r.kullanici) || "?", g: {} }; kisi.set(r.user_id, u); }
+      if (adBuyut(r.kullanici)) u.ad = adBuyut(r.kullanici);
       u.g[r.tarih] = (u.g[r.tarih] || 0) + rsum(r); gunler.add(r.tarih);
     });
     if (data.length < 1000) break;
@@ -2394,21 +2477,147 @@ $("aOnce").onclick = () => { const d = new Date((ayBas || ayBaslangic(secili)) +
 $("aSonra").onclick = () => { const d = new Date((ayBas || ayBaslangic(secili)) + "T12:00:00"); ayBas = ayBaslangic(tarihStr(new Date(d.getFullYear(), d.getMonth() + 1, 1))); ayYukle(); };
 $("aBu").onclick = () => { ayBas = ayBaslangic(bugun); ayYukle(); };
 
+// ================= YILLIK ORTALAMA =================
+const AY_KISA = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+let yilNo = null, yilSeq = 0;
+async function yilYukle() {
+  if (!sb) return;
+  const seq = ++yilSeq, yil = yilNo || Number(secili.slice(0, 4));
+  const kisi = new Map();
+  $("yEtiket").textContent = "Yıllık veriler yükleniyor…";
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from("sayilar").select("tarih,user_id,kullanici,n1,n2,n3,n4,n5,n6")
+      .gte("tarih", yil + "-01-01").lte("tarih", yil + "-12-31").order("tarih").order("user_id").order("satir").range(from, from + 999);
+    if (seq !== yilSeq) return;
+    if (error) { $("yEtiket").textContent = "Yıllık veriler yüklenemedi: " + error.message; return; }
+    data.forEach(r => {
+      if (!COLS.some(k => r[k] != null && r[k] !== "")) return;
+      let u = kisi.get(r.user_id); if (!u) { u = { ad: adBuyut(r.kullanici) || "?", g: {} }; kisi.set(r.user_id, u); }
+      if (adBuyut(r.kullanici)) u.ad = adBuyut(r.kullanici);
+      u.g[r.tarih] = (u.g[r.tarih] || 0) + rsum(r);
+    });
+    if (data.length < 1000) break;
+  }
+  yilCiz(yil, kisi);
+}
+function yilCiz(yil, kisi) {
+  const bugunYil = Number(bugun.slice(0, 4));
+  // Kişi başına ay toplamı ve sayı girilen gün sayısı (bugünden sonraki tarihler sayılmaz)
+  const us = [...kisi.entries()].map(([id, u]) => {
+    const ay = Array(12).fill(null), gun = new Set();
+    Object.keys(u.g).filter(g => g <= bugun).forEach(g => { const m = Number(g.slice(5, 7)) - 1; ay[m] = (ay[m] || 0) + u.g[g]; gun.add(g); });
+    return { id, ad: u.ad, ay, gun, top: ay.reduce((a, v) => a + (v || 0), 0) };
+  }).filter(u => u.gun.size).sort((a, b) => b.top - a.top || a.ad.localeCompare(b.ad, "tr"));
+  us.forEach((u, i) => { u.renk = HC_RENK[i % HC_RENK.length]; });
+  const gunSet = new Set(); us.forEach(u => u.gun.forEach(g => gunSet.add(g)));
+  const gunSay = gunSet.size;
+  const ayTop = Array.from({ length: 12 }, (_, m) => us.some(u => u.ay[m] != null) ? yuv(us.reduce((a, u) => a + (u.ay[m] || 0), 0)) : null);
+  const ayGun = Array.from({ length: 12 }, (_, m) => [...gunSet].filter(g => Number(g.slice(5, 7)) - 1 === m).length);
+  const doluAy = ayTop.filter(v => v != null).length;
+  const toplam = yuv(ayTop.reduce((a, v) => a + (v || 0), 0));
+  const gunOrt = gunSay ? yuv(toplam / gunSay) : 0, ayOrt = doluAy ? yuv(toplam / doluAy) : 0;
+  $("yEtiket").textContent = yil + (gunSay ? " · günlük ortalama, sayı girilen " + gunSay + " günün ortalamasıdır" : "");
+  $("ySonra").disabled = yil >= bugunYil;
+  $("yBu").disabled = yil === bugunYil;
+
+  const hs = $("yStat"); hs.textContent = "";
+  const stat = (k, v, sub, cls) => { const c = el("div", "stat" + (cls ? " " + cls : "")); c.append(el("div", "k", k), el("div", "v", v), el("div", "s", sub || "")); hs.append(c); };
+  stat("Günlük ortalama", fmt(gunOrt), "sayı girilen günlere göre", "g");
+  stat("Aylık ortalama", fmt(ayOrt), doluAy ? "sayı girilen " + doluAy + " ayın ortalaması" : "");
+  stat("Yıllık toplam", fmt(toplam), "");
+  stat("Çalışılan gün", String(gunSay), "");
+
+  const box = $("yGrafik"); box.textContent = "";
+  if (!gunSay) { box.append(el("p", "mut", yil + " yılında henüz sayı girilmemiş.")); return; }
+
+  const NS = "http://www.w3.org/2000/svg", W = 760, H = 300, L = 54, R = 84, T = 30, B = 34;
+  const mk = (n, at, t) => { const e = document.createElementNS(NS, n); for (const k in at || {}) e.setAttribute(k, at[k]); if (t != null) e.textContent = t; return e; };
+  const svg = mk("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Aylık atılan sayı grafiği (kullanıcıya göre)" });
+  const hedef = Math.max(...ayTop.map(v => v || 0), ayOrt, 1) * 1.12;
+  const adim = (() => { const ham = hedef / 4, e = Math.pow(10, Math.floor(Math.log10(ham))), f = ham / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e; })();
+  const ust = adim * 4, y = v => T + (H - T - B) * (1 - v / ust);
+  for (let i = 0; i <= 4; i++) {
+    const v = adim * i;
+    svg.append(mk("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "hc-g" }));
+    svg.append(mk("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end", class: "hc-t" }, fmt(yuv(v))));
+  }
+  const kol = (W - L - R) / 12, bw = Math.min(44, kol * 0.66);
+  const buAy = Number(bugun.slice(5, 7)) - 1;
+  for (let m = 0; m < 12; m++) {
+    const cx = L + kol * m + kol / 2, gelecek = yil > bugunYil || (yil === bugunYil && m > buAy), v = ayTop[m];
+    const grp = mk("g", { class: "hc-col" });
+    const kim = us.filter(u => u.ay[m] != null).map(u => u.ad + ": " + fmt(yuv(u.ay[m]))).join("\n");
+    grp.append(mk("title", {}, AY_KISA[m] + " " + yil + (gelecek ? ": henüz yok" : v != null ? " · toplam " + fmt(v) + " · " + ayGun[m] + " gün" + (kim ? "\n" + kim : "") : ": kayıt yok")));
+    grp.append(mk("rect", { x: cx - kol / 2, y: T - 14, width: kol, height: H - T - B + 14, fill: "transparent" }));
+    if (v != null) {
+      let alt = 0;
+      us.forEach(u => {
+        const d = u.ay[m]; if (d == null || d <= 0) return;
+        const yy = y(alt + d), h = y(alt) - yy;
+        grp.append(mk("rect", { x: cx - bw / 2, y: yy, width: bw, height: Math.max(h, 1), fill: u.renk, stroke: "var(--card)", "stroke-width": 1 }));
+        alt += d;
+      });
+      grp.append(mk("text", { x: cx, y: y(alt) - 6, "text-anchor": "middle", class: "hc-v" }, fmt(v)));
+    } else if (gelecek) {
+      grp.append(mk("rect", { x: cx - bw / 2, y: y(0) - 3, width: bw, height: 3, rx: 1.5, class: "hc-bar fut" }));
+    } else {
+      grp.append(mk("text", { x: cx, y: y(0) - 6, "text-anchor": "middle", class: "hc-t" }, "—"));
+    }
+    grp.append(mk("text", { x: cx, y: H - 12, "text-anchor": "middle", class: "hc-t", style: (yil === bugunYil && m === buAy) ? "font-weight:700;fill:var(--fg)" : "" }, AY_KISA[m]));
+    if (!gelecek) grp.onclick = () => { ayBas = yil + "-" + String(m + 1).padStart(2, "0") + "-01"; ortSekme = "ay"; ortUygula(); ayYukle(); };
+    svg.append(grp);
+  }
+  svg.append(mk("line", { x1: L, x2: W - R + 6, y1: y(ayOrt), y2: y(ayOrt), class: "hc-avg" }));
+  svg.append(mk("text", { x: W - R + 10, y: y(ayOrt) + 4, "text-anchor": "start", class: "hc-avgt" }, "Ort. " + fmt(ayOrt)));
+  box.append(svg);
+  box.append(el("p", "mut cmp-alt", "Çizgi, sayı girilen ayların aylık ortalamasıdır. Bir aya tıklarsanız o ayın ayrıntısı açılır."));
+
+  const leg = el("div", "hc-leg");
+  us.forEach(u => {
+    const c = el("span", "hc-chip"), d = el("i"); d.style.background = u.renk;
+    c.append(d, el("span", "", u.ad + " · " + fmt(yuv(u.top)))); leg.append(c);
+  });
+  box.append(leg);
+
+  // Kim ne kadar attı: ay ay kişi tablosu
+  const wrap = el("div", "scroll"), tbl = el("table", "at hc-tbl"), head = el("thead"), hr = el("tr"), body = el("tbody");
+  ["KİM"].concat(AY_KISA, ["TOPLAM", "GÜN", "GÜNLÜK ORT."]).forEach(h => hr.append(el("th", "", h))); head.append(hr); tbl.append(head);
+  us.forEach(u => {
+    const tr = el("tr"), k = el("td", "hc-k"), d = el("i"); d.style.background = u.renk;
+    k.append(d, document.createTextNode(u.ad)); tr.append(k);
+    u.ay.forEach(v => tr.append(el("td", "hc-n", v != null ? fmt(yuv(v)) : "—")));
+    tr.append(el("td", "hc-n hc-s", fmt(yuv(u.top))), el("td", "hc-n", String(u.gun.size)), el("td", "hc-n", fmt(yuv(u.top / u.gun.size)))); body.append(tr);
+  });
+  const ft = el("tr", "tot"); ft.append(el("td", "", "GENEL TOPLAM"));
+  ayTop.forEach(v => ft.append(el("td", "", v != null ? fmt(v) : "—")));
+  ft.append(el("td", "", fmt(toplam)), el("td", "", String(gunSay)), el("td", "", fmt(gunOrt))); body.append(ft);
+  tbl.append(body); wrap.append(tbl); box.append(wrap);
+}
+$("yOnce").onclick = () => { yilNo = (yilNo || Number(secili.slice(0, 4))) - 1; yilYukle(); };
+$("ySonra").onclick = () => { yilNo = Math.min((yilNo || Number(secili.slice(0, 4))) + 1, Number(bugun.slice(0, 4))); yilYukle(); };
+$("yBu").onclick = () => { yilNo = Number(bugun.slice(0, 4)); yilYukle(); };
+
 // Haftalık + aylık ortalama tek pencerede, sekmeli
 var ortSekme = "hafta";
 function ortUygula() {
   const h = gorunur("hafta"), a = gorunur("ay");
   if (ortSekme === "hafta" && !h && a) ortSekme = "ay";
-  if (ortSekme === "ay" && !a && h) ortSekme = "hafta";
+  if ((ortSekme === "ay" || ortSekme === "yil") && !a && h) ortSekme = "hafta";
   $("haftaPanel").classList.toggle("ort-gizli", ortSekme !== "hafta");
   $("ayPanel").classList.toggle("ort-gizli", ortSekme !== "ay");
+  $("yilPanel").classList.toggle("ort-gizli", ortSekme !== "yil");
   $("ortH").classList.toggle("sel", ortSekme === "hafta");
   $("ortA").classList.toggle("sel", ortSekme === "ay");
-  $("ortSekme").classList.toggle("hide", !(h && a));
+  $("ortY").classList.toggle("sel", ortSekme === "yil");
+  $("ortH").classList.toggle("hide", !h);
+  $("ortA").classList.toggle("hide", !a);
+  $("ortY").classList.toggle("hide", !a);
+  $("ortSekme").classList.toggle("hide", !((h ? 1 : 0) + (a ? 2 : 0) > 1));
   $("ortPanel").classList.toggle("gz", !(h || a));
 }
 $("ortH").onclick = () => { ortSekme = "hafta"; ortUygula(); };
 $("ortA").onclick = () => { ortSekme = "ay"; ortUygula(); };
+$("ortY").onclick = () => { ortSekme = "yil"; ortUygula(); yilYukle(); };
 ortUygula();
 
 // Sayfadan ayrılmadan / sekme gizlenmeden önce bekleyen değişiklikleri hemen kaydet
